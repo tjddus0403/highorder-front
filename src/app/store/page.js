@@ -244,7 +244,7 @@ export default function StorePage() {
       </div>
 
       {/* Tab Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
         {activeTab === 'menu' ? (
           <div className="space-y-6">
             {/* Menu Items */}
@@ -348,11 +348,7 @@ export default function StorePage() {
 
       {/* Footer */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors duration-200">
-            <span>📋</span>
-            <span>주문내역</span>
-          </button>
+        <div className="max-w-6xl mx-auto flex justify-end items-center">
           <button 
             onClick={handleOrder}
             disabled={cartItems.length === 0}
