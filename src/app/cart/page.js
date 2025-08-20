@@ -129,6 +129,8 @@ export default function CartPage() {
     }
   };
 
+
+
   if (loading) {
     return (
       <div className="font-sans min-h-screen bg-gray-100 flex items-center justify-center">

@@ -14,6 +14,9 @@ export default function MenuDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [cartItems, setCartItems] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [avgRating, setAvgRating] = useState(0);
+  const [customerNames, setCustomerNames] = useState({});
 
   // 이미지 URI를 백엔드 서버의 전체 URL로 변환하는 헬퍼 함수
   const getFullImageUrl = (imageUri) => {
@@ -33,9 +36,34 @@ export default function MenuDetailPage() {
     return `http://localhost:8080/${imageUri}`;
   };
 
+  // 평점을 별점으로 표시하는 컴포넌트
+  const StarRating = ({ rating }) => {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    return (
+      <div className="flex items-center space-x-1">
+        {[...Array(fullStars)].map((_, i) => (
+          <span key={`full-${i}`} className="text-yellow-400 text-xl">★</span>
+        ))}
+        {hasHalfStar && (
+          <span className="text-yellow-400 text-xl">☆</span>
+        )}
+        {[...Array(emptyStars)].map((_, i) => (
+          <span key={`empty-${i}`} className="text-gray-300 text-xl">☆</span>
+        ))}
+        <span className="ml-2 text-sm text-gray-600">
+          ({rating === 0 ? '0.0' : rating.toFixed(1)})
+        </span>
+      </div>
+    );
+  };
+
   useEffect(() => {
     if (menuId) {
       fetchMenu();
+      fetchReviews();
     }
     // localStorage에서 장바구니 아이템 불러오기
     loadCartItems();
@@ -152,6 +180,59 @@ export default function MenuDetailPage() {
     }
   };
 
+  // 고객 정보를 가져오는 함수
+  const fetchCustomerInfo = async (customerId) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/customers/${customerId}`);
+      if (response.ok) {
+        const customerData = await response.json();
+        return customerData.nickname || customerData.name || `고객 #${customerId}`;
+      }
+    } catch (error) {
+      console.error(`고객 ${customerId} 정보 로드 실패:`, error);
+    }
+    return `고객 #${customerId}`;
+  };
+
+  const fetchReviews = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/reviews/menu/${menuId}`);
+      if (response.ok) {
+        const reviewsData = await response.json();
+        console.log('받아온 리뷰 데이터:', reviewsData);
+        setReviews(reviewsData);
+        
+        // 평균 평점 계산
+        if (reviewsData.length > 0) {
+          const totalRating = reviewsData.reduce((sum, review) => sum + review.rating, 0);
+          const averageRating = totalRating / reviewsData.length;
+          setAvgRating(averageRating);
+          
+          // 각 리뷰의 고객 정보 가져오기
+          const customerIds = [...new Set(reviewsData.map(review => review.customerId))];
+          const customerNamesData = {};
+          
+          for (const customerId of customerIds) {
+            const nickname = await fetchCustomerInfo(customerId);
+            customerNamesData[customerId] = nickname;
+          }
+          
+          setCustomerNames(customerNamesData);
+        } else {
+          setAvgRating(0);
+        }
+      } else {
+        console.error('리뷰를 불러올 수 없습니다.');
+        setReviews([]);
+        setAvgRating(0);
+      }
+    } catch (error) {
+      console.error('리뷰 로드 실패:', error);
+      setReviews([]);
+      setAvgRating(0);
+    }
+  };
+
   const handleQuantityChange = (change) => {
     const newQuantity = quantity + change;
     if (newQuantity >= 1 && newQuantity <= 99) {
@@ -171,12 +252,7 @@ export default function MenuDetailPage() {
     }
   };
 
-  const handleOrderNow = () => {
-    // 바로 주문하는 로직
-    console.log('바로 주문:', { menu, quantity });
-    // TODO: 실제 주문 API 호출
-    alert(`${menu.name} ${quantity}개를 주문하겠습니다!`);
-  };
+
 
   if (!menuId) {
     return (
@@ -230,7 +306,7 @@ export default function MenuDetailPage() {
               </button>
               <button 
                 onClick={() => router.push('/store')}
-                className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200"
               >
                 가게로 돌아가기
               </button>
@@ -313,12 +389,12 @@ export default function MenuDetailPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           {/* Menu Image */}
-          <div className="w-full h-64 bg-gray-100 flex items-center justify-center overflow-hidden">
+          <div className="w-full h-[500px] bg-gray-100 flex items-center justify-center overflow-hidden">
             {menu.imageUri ? (
               <img
                 src={getFullImageUrl(menu.imageUri)}
                 alt={menu.name}
-                className="w-full h-64 object-cover"
+                className="w-full h-[500px] object-cover"
                 onError={(e) => {
                   console.error('메뉴 이미지 로드 실패:', menu.imageUri, '-> 완전한 URL:', getFullImageUrl(menu.imageUri));
                   e.target.style.display = 'none';
@@ -330,7 +406,7 @@ export default function MenuDetailPage() {
               />
             ) : null}
             <div 
-              className="w-full h-64 flex items-center justify-center text-8xl" 
+              className="w-full h-[500px] flex items-center justify-center text-8xl" 
               style={{ display: menu.imageUri ? 'none' : 'flex' }}
             >
               🍽️
@@ -340,16 +416,20 @@ export default function MenuDetailPage() {
           {/* Menu Info */}
           <div className="p-8">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                {menu.category}
-              </span>
-              <span className="text-2xl font-bold text-red-600">
+              <h1 className="text-3xl font-bold text-gray-900">{menu.name}</h1>
+              <span className="text-3xl font-bold text-red-600">
                 ₩{menu.price.toLocaleString()}
               </span>
             </div>
+            <p className="text-lg text-gray-600 mb-4">{menu.description}</p>
             
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">{menu.name}</h1>
-            <p className="text-lg text-gray-600 mb-8">{menu.description}</p>
+            {/* 평점 표시 */}
+            <div className="mb-6 p-4 bg-yellow-50 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <span className="text-lg font-medium text-gray-900">평점:</span>
+                <StarRating rating={avgRating} />
+              </div>
+            </div>
             
             {/* Quantity Selector */}
             <div className="flex items-center justify-between mb-8 p-4 bg-gray-50 rounded-lg">
@@ -382,21 +462,70 @@ export default function MenuDetailPage() {
             </div>
             
             {/* Action Buttons */}
-            <div className="flex space-x-4">
+            <div className="mb-8">
               <button
                 onClick={handleAddToCart}
-                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-4 px-6 rounded-lg transition-colors duration-200"
+                className="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-4 px-6 rounded-lg transition-colors duration-200"
               >
                 장바구니에 추가
               </button>
-              <button
-                onClick={handleOrderNow}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-4 px-6 rounded-lg transition-colors duration-200"
-              >
-                바로 주문하기
-              </button>
             </div>
           </div>
+        </div>
+        
+        {/* 리뷰 섹션 */}
+        <div className="mt-8 bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-900">리뷰</h2>
+            <p className="text-gray-600 mt-1">
+              {reviews.length > 0 ? `${reviews.length}개의 리뷰` : '아직 리뷰가 없습니다.'}
+            </p>
+          </div>
+          
+          {reviews.length > 0 ? (
+            <div className="divide-y divide-gray-200">
+              {reviews.map((review) => (
+                <div key={review.id} className="p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span className="text-blue-600 font-medium text-sm">
+                          {customerNames[review.customerId] ? 
+                            customerNames[review.customerId].charAt(0) : 
+                            review.customerId.toString().charAt(0)
+                          }
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {customerNames[review.customerId] || `고객 #${review.customerId}`}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(review.createdAt).toLocaleDateString('ko-KR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <StarRating rating={review.rating} />
+                    </div>
+                  </div>
+                  <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 text-center text-gray-500">
+              <div className="text-4xl mb-4">💬</div>
+              <p className="text-lg mb-2">아직 리뷰가 없습니다</p>
+              <p className="text-sm">이 메뉴를 주문하고 첫 번째 리뷰를 남겨보세요!</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

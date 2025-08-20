@@ -48,9 +48,9 @@ export default function Home() {
       <main className="flex-1 flex items-center justify-center">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
-            {/* CTA Buttons */}
-            <div className="flex justify-center items-center mt-48">
-              <button
+            {/* QR Code Section */}
+            <div className="flex justify-center items-center mt-96">
+              <div
                 onClick={() => {
                   if (isLoggedIn) {
                     router.push('/store');
@@ -58,10 +58,16 @@ export default function Home() {
                     router.push('/login');
                   }
                 }}
-                className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl cursor-pointer"
+                className="cursor-pointer transform hover:scale-105 transition-all duration-200 bg-white rounded-lg shadow-lg"
               >
-                {isLoggedIn ? '🏪 가게 입장하기' : '🔐 로그인 후 입장'}
-              </button>
+                <Image
+                  src="/QR_ex.png"
+                  alt="QR 코드"
+                  width={200}
+                  height={200}
+                  className="w-48 h-48 object-contain"
+                />
+              </div>
             </div>
           </div>
         </div>

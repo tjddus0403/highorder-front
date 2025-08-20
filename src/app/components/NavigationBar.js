@@ -9,11 +9,25 @@ export default function NavigationBar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userNickname, setUserNickname] = useState("");
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [cartItemCount, setCartItemCount] = useState(0);
+
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
+    // 앱 시작 시 로그인 상태 초기화 (로그아웃 상태로 시작)
+    const initializeApp = () => {
+      // localStorage에서 로그인 정보 제거
+      localStorage.removeItem('token');
+      localStorage.removeItem('userNickname');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userName');
+      localStorage.removeItem('userEmail');
+      
+      // 로그아웃 상태로 설정
+      setIsLoggedIn(false);
+      setUserNickname("");
+    };
+
     // 로컬 스토리지에서 로그인 상태 확인
     const checkLoginStatus = () => {
       const token = localStorage.getItem('token');
@@ -28,48 +42,25 @@ export default function NavigationBar() {
       }
     };
 
-    // 장바구니 아이템 개수 확인
-    const updateCartCount = () => {
-      try {
-        const cart = localStorage.getItem('cart');
-        if (cart) {
-          const cartItems = JSON.parse(cart);
-          const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
-          setCartItemCount(totalItems);
-        } else {
-          setCartItemCount(0);
-        }
-      } catch (error) {
-        console.error('장바구니 개수 업데이트 실패:', error);
-        setCartItemCount(0);
-      }
-    };
+    // 앱 시작 시 초기화
+    initializeApp();
 
-    // 초기 상태 확인
-    checkLoginStatus();
-    updateCartCount();
-
-    // storage 이벤트 리스너 추가
+    // storage 이벤트 리스너 추가 (다른 탭에서의 변경 감지)
     const handleStorageChange = () => {
       checkLoginStatus();
-      updateCartCount();
     };
 
-    // 장바구니 업데이트 이벤트 리스너 추가
-    const handleCartUpdate = () => {
-      updateCartCount();
+    // 같은 탭에서의 localStorage 변경 감지를 위한 커스텀 이벤트 리스너
+    const handleCustomStorageChange = () => {
+      checkLoginStatus();
     };
-
-    // 주기적으로 장바구니 개수 확인 (1초마다)
-    const intervalId = setInterval(updateCartCount, 1000);
 
     window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('cartUpdated', handleCartUpdate);
+    window.addEventListener('localStorageChange', handleCustomStorageChange);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('cartUpdated', handleCartUpdate);
-      clearInterval(intervalId);
+      window.removeEventListener('localStorageChange', handleCustomStorageChange);
     };
   }, []);
 
@@ -84,8 +75,8 @@ export default function NavigationBar() {
     setUserNickname("");
     setShowUserMenu(false);
     
-    // 로그아웃 상태 강제 업데이트를 위한 이벤트 발생
-    window.dispatchEvent(new Event('storage'));
+    // 로그아웃 상태 강제 업데이트를 위한 커스텀 이벤트 발생
+    window.dispatchEvent(new Event('localStorageChange'));
     
     // 홈페이지로 이동
     router.push('/');
@@ -120,21 +111,6 @@ export default function NavigationBar() {
 
           {/* User Actions */}
           <div className="flex items-center space-x-4">
-            {/* Cart Icon */}
-            <button
-              onClick={() => router.push('/cart')}
-              className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors duration-200"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
-              </svg>
-              {/* Cart Item Count Badge */}
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItemCount > 99 ? '99+' : cartItemCount}
-                </span>
-              )}
-            </button>
             
             {isLoggedIn ? (
               <div className="relative">
@@ -188,7 +164,7 @@ export default function NavigationBar() {
             ) : (
               <button
                 onClick={handleLogin}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
               >
                 로그인
               </button>
