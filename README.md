@@ -1,36 +1,194 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🍽️ 하이오더 (HighOrder) - 포 커스토머
 
-## Getting Started
+**더 나은 음식 경험을 위한 선택**
 
-First, run the development server:
+하이오더는 주변의 맛있는 가게들을 쉽게 찾고, 간편하게 주문할 수 있는 플랫폼입니다. QR 코드를 통해 가게에 접속하여 메뉴를 확인하고 주문할 수 있습니다.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## ✨ 주요 기능
+
+### 🏠 홈페이지
+- QR 코드를 통한 가게 접속
+- 로그인 상태에 따른 동적 라우팅
+- 반응형 디자인과 애니메이션 효과
+
+### 🏪 가게 페이지
+- 가게 정보 및 메뉴 목록 표시
+- 메뉴별 상세 정보 (가격, 설명, 이미지)
+- 장바구니 기능
+- 메뉴 검색 및 필터링
+
+### 🛒 장바구니
+- 메뉴 추가/수량 조절/삭제
+- 로컬 스토리지를 통한 데이터 저장
+- 주문 전 최종 확인
+
+### 👤 마이페이지
+- **프로필 탭**: 사용자 정보 관리
+- **주문 내역 탭**: 과거 주문 조회 및 상세 정보
+- **리뷰 탭**: 주문한 메뉴에 대한 리뷰 작성/수정/삭제
+- **스탬프 탭**: 적립된 스탬프 관리
+- **쿠폰 탭**: 보유 쿠폰 확인 및 사용
+
+### 🔐 인증 시스템
+- 이메일/비밀번호 로그인
+- JWT 토큰 기반 인증
+- 로그인 상태 유지
+
+## 🛠️ 기술 스택
+
+### Frontend
+- **Next.js 15.4.7** - React 기반 풀스택 프레임워크
+- **React 19.1.0** - 사용자 인터페이스 구축
+- **Tailwind CSS 4** - 유틸리티 기반 CSS 프레임워크
+- **PostCSS** - CSS 전처리 및 최적화
+
+### 개발 도구
+- **ESLint** - 코드 품질 관리
+- **Turbopack** - 빠른 개발 서버
+
+## 📁 프로젝트 구조
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── components/         # 재사용 가능한 컴포넌트
+│   │   ├── mypage/        # 마이페이지 관련 컴포넌트
+│   │   │   ├── ProfileTab.js      # 프로필 탭
+│   │   │   ├── OrdersTab.js       # 주문 내역 탭
+│   │   │   ├── ReviewsTab.js      # 리뷰 탭
+│   │   │   ├── StampsTab.js       # 스탬프 탭
+│   │   │   ├── CouponsTab.js      # 쿠폰 탭
+│   │   │   ├── ReviewModal.js     # 리뷰 작성 모달
+│   │   │   └── StampDeleteModal.js # 스탬프 삭제 모달
+│   │   └── NavigationBar.js       # 네비게이션 바
+│   ├── cart/              # 장바구니 페이지
+│   ├── login/             # 로그인 페이지
+│   ├── menu/              # 메뉴 상세 페이지
+│   ├── mypage/            # 마이페이지
+│   ├── store/             # 가게 페이지
+│   ├── globals.css        # 전역 스타일
+│   ├── layout.js          # 루트 레이아웃
+│   └── page.js            # 홈페이지
+├── public/                 # 정적 파일
+│   ├── logo.png           # 로고 이미지
+│   ├── QR_ex.png          # QR 코드 예시
+│   ├── mvbackground.gif   # 메인 배경
+│   └── ...                # 기타 이미지 파일들
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 시작하기
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### 필수 요구사항
+- Node.js 18.0.0 이상
+- npm 또는 yarn
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 설치 및 실행
 
-## Learn More
+1. **의존성 설치**
+   ```bash
+   npm install
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. **개발 서버 실행**
+   ```bash
+   npm run dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **브라우저에서 확인**
+   ```
+   http://localhost:3000
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 빌드 및 배포
 
-## Deploy on Vercel
+```bash
+# 프로덕션 빌드
+npm run build
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# 프로덕션 서버 실행
+npm start
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# 린팅
+npm run lint
+```
+
+## 🔧 환경 설정
+
+### 백엔드 API 연결
+현재 프로젝트는 `http://localhost:8080`의 백엔드 API와 연동되어 있습니다.
+
+### 환경 변수
+필요한 경우 `.env.local` 파일을 생성하여 환경 변수를 설정할 수 있습니다.
+
+## 📱 주요 페이지 설명
+
+### 홈페이지 (`/`)
+- QR 코드를 통한 가게 접속
+- 로그인 상태 확인
+- 반응형 디자인
+
+### 가게 페이지 (`/store`)
+- 가게 정보 및 메뉴 목록
+- 장바구니 기능
+- 메뉴 검색
+
+### 메뉴 상세 (`/menu`)
+- 메뉴별 상세 정보
+- 수량 선택 및 장바구니 추가
+- 리뷰 시스템
+
+### 마이페이지 (`/mypage`)
+- 사용자 정보 관리
+- 주문 내역 조회
+- 리뷰 작성/관리
+- 스탬프 및 쿠폰 관리
+
+### 장바구니 (`/cart`)
+- 선택한 메뉴 목록
+- 수량 조절 및 삭제
+- 주문 진행
+
+## 🎨 UI/UX 특징
+
+- **모던한 디자인**: Tailwind CSS를 활용한 깔끔하고 현대적인 인터페이스
+- **반응형 레이아웃**: 모바일과 데스크톱 모두에서 최적화된 사용자 경험
+- **직관적인 네비게이션**: 사용자가 쉽게 원하는 기능을 찾을 수 있는 구조
+- **애니메이션 효과**: 부드러운 전환과 호버 효과로 상호작용성 향상
+
+## 🔒 보안 및 인증
+
+- JWT 토큰 기반 인증
+- 로컬 스토리지를 통한 사용자 세션 관리
+- API 요청 시 인증 상태 확인
+
+## 📊 데이터 관리
+
+- **로컬 스토리지**: 장바구니, 사용자 정보 등 클라이언트 사이드 데이터
+- **백엔드 API**: 사용자 정보, 주문 내역, 메뉴 정보 등 서버 사이드 데이터
+
+## 🚧 개발 중인 기능
+
+- 회원가입 시스템
+- 결제 시스템 연동
+- 푸시 알림
+- 실시간 주문 상태 업데이트
+
+## 🤝 기여하기
+
+1. 이 저장소를 포크합니다
+2. 새로운 기능 브랜치를 생성합니다 (`git checkout -b feature/amazing-feature`)
+3. 변경사항을 커밋합니다 (`git commit -m 'Add some amazing feature'`)
+4. 브랜치에 푸시합니다 (`git push origin feature/amazing-feature`)
+5. Pull Request를 생성합니다
+
+## 📄 라이선스
+
+이 프로젝트는 MIT 라이선스 하에 배포됩니다.
+
+## 📞 문의
+
+프로젝트에 대한 문의사항이 있으시면 이슈를 생성해 주세요.
+
+---
+
+**하이오더** - 더 나은 음식 경험을 위한 선택 🍽️✨
