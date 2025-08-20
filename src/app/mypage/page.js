@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import ProfileTab from "../components/mypage/ProfileTab";
-import OrdersTab from "../components/mypage/OrdersTab";
-import ReviewsTab from "../components/mypage/ReviewsTab";
-import StampsTab from "../components/mypage/StampsTab";
-import CouponsTab from "../components/mypage/CouponsTab";
-import ReviewModal from "../components/mypage/ReviewModal";
-import StampDeleteModal from "../components/mypage/StampDeleteModal";
+import ProfileTab from "./ProfileTab";
+import OrdersTab from "./OrdersTab";
+import ReviewsTab from "./ReviewsTab";
+import StampsTab from "./StampsTab";
+import CouponsTab from "./CouponsTab";
+import ReviewModal from "./ReviewModal";
+import StampDeleteModal from "./StampDeleteModal";
 
 export default function MyPage() {
   const [userData, setUserData] = useState(null);
