@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import StoreMap from "../components/StoreMap";
 
 // 가게 ID (QR 코드에서 가져온 값)
 const STORE_ID = 1;
@@ -333,14 +334,23 @@ export default function StorePage() {
                 <span className="text-gray-500 w-20">📞 전화</span>
                 <span className="text-gray-900">{storeInfo.phone}</span>
               </div>
-              {/* {storeInfo.latitude && storeInfo.longitude && (
-                <div className="flex items-start space-x-3">
-                  <span className="text-gray-500 w-20">🗺️ 위치</span>
-                  <span className="text-gray-900">
-                    {storeInfo.latitude}, {storeInfo.longitude}
-                  </span>
-                </div>
-              )} */}
+
+              {/* 지도 표시 */}
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">📍 가게 위치</h3>
+                {storeInfo.latitude && storeInfo.longitude ? (
+                  <StoreMap 
+                    latitude={parseFloat(storeInfo.latitude)}
+                    longitude={parseFloat(storeInfo.longitude)}
+                    storeName={storeInfo.name}
+                    address={storeInfo.address}
+                  />
+                ) : (
+                  <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
+                    <p className="text-gray-500">위치 정보가 없습니다.</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
