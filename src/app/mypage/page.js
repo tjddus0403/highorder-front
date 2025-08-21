@@ -121,7 +121,9 @@ export default function MyPage() {
                 itemsWithMenuInfo.push({
                   ...item,
                   menuName: menuInfoMap[item.menuId].name,
-                  menuDescription: menuInfoMap[item.menuId].description
+                  menuDescription: menuInfoMap[item.menuId].description,
+                  price: menuInfoMap[item.menuId].price || item.price, // 메뉴의 가격 정보 사용
+                  quantity: item.quantity || 1 // 주문 아이템의 수량 정보 사용
                 });
               } catch (err) {
                 console.error(`Error fetching menu info for menu ${item.menuId}:`, err);
