@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 
 export default function MyRestaurantMapTab({ orders, reviews, stamps, stores }) {
   const [visitedStores, setVisitedStores] = useState([]);
-  const [selectedStore, setSelectedStore] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -247,10 +246,6 @@ export default function MyRestaurantMapTab({ orders, reviews, stamps, stores }) 
     };
   }, []);
 
-  const handleStoreClick = (store) => {
-    setSelectedStore(store);
-  };
-
   const handleGoToStore = (storeId) => {
     router.push(`/store?storeId=${storeId}`);
   };
@@ -408,8 +403,7 @@ export default function MyRestaurantMapTab({ orders, reviews, stamps, stores }) 
                 {visitedStores.slice(0, 6).map((store) => (
                   <div
                     key={store.id}
-                    className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-                    onClick={() => handleStoreClick(store)}
+                    className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg"
                   >
                     <h5 className="font-medium text-gray-900 dark:text-white mb-2">
                       {store.name}
@@ -431,85 +425,6 @@ export default function MyRestaurantMapTab({ orders, reviews, stamps, stores }) 
           </div>
         )}
       </div>
-
-      {/* 가게 상세 정보 모달 */}
-      {selectedStore && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {selectedStore.name}
-                </h3>
-                <button
-                  onClick={() => setSelectedStore(null)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
-                >
-                  ×
-                </button>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">방문 횟수</p>
-                    <p className="text-2xl font-bold text-blue-600">{selectedStore.visitCount}회</p>
-                  </div>
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">총 지출</p>
-                    <p className="text-2xl font-bold text-green-600">{formatCurrency(selectedStore.totalSpent)}원</p>
-                  </div>
-                </div>
-                
-                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">가게 설명</p>
-                  <p className="text-gray-900 dark:text-white">{selectedStore.description || '가게 설명이 없습니다.'}</p>
-                </div>
-                
-                {selectedStore.reviews.length > 0 && (
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">리뷰 ({selectedStore.reviews.length}개)</p>
-                    <div className="space-y-3">
-                      {selectedStore.reviews.slice(0, 3).map((review) => (
-                        <div key={review.id} className="border-l-4 border-blue-500 pl-3">
-                          <div className="flex items-center space-x-2 mb-1">
-                            {renderStars(review.rating)}
-                            <span className="text-sm text-gray-600 dark:text-gray-400">
-                              {review.menuName}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-900 dark:text-white">{review.comment}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                <div className="flex space-x-3">
-                  <button
-                    onClick={() => {
-                      setSelectedStore(null);
-                      handleGoToStore(selectedStore.id);
-                    }}
-                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium transition-colors duration-200"
-                  >
-                    🏪 가게로 이동
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedStore(null);
-                      router.push('/mypage?tab=reviews');
-                    }}
-                    className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-medium transition-colors duration-200"
-                  >
-                    📝 리뷰 보기
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
