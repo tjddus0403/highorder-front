@@ -7,6 +7,7 @@ import OrdersTab from "./OrdersTab";
 import ReviewsTab from "./ReviewsTab";
 import StampsTab from "./StampsTab";
 import CouponsTab from "./CouponsTab";
+import MyRestaurantMapTab from "./MyRestaurantMapTab";
 import ReviewModal from "./ReviewModal";
 import StampDeleteModal from "./StampDeleteModal";
 
@@ -588,7 +589,8 @@ export default function MyPage() {
     { id: 'orders', name: '주문내역', icon: '📋' },
     { id: 'reviews', name: '리뷰', icon: '⭐' },
     { id: 'stamps', name: '스탬프', icon: '🏷️' },
-    { id: 'coupons', name: '쿠폰', icon: '🎫' }
+    { id: 'coupons', name: '쿠폰', icon: '🎫' },
+    { id: 'restaurantMap', name: '맛집지도', icon: '🗺️' }
   ];
 
   if (loading) {
@@ -740,6 +742,14 @@ export default function MyPage() {
               couponStores={couponStores}
               onUseCoupon={handleUseCoupon}
               onDeleteCoupon={handleDeleteCoupon}
+            />
+          )}
+          {activeTab === 'restaurantMap' && (
+            <MyRestaurantMapTab
+              orders={orders}
+              reviews={reviews}
+              stamps={stamps}
+              stores={stores}
             />
           )}
         </div>

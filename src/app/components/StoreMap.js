@@ -1,60 +1,91 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
 const StoreMap = ({ latitude, longitude, storeName, address }) => {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const isInitializedRef = useRef(false);
+
+  const cleanupMap = useCallback(() => {
+    if (mapInstanceRef.current) {
+      try {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      } catch (error) {
+        console.log('Map cleanup error:', error);
+      }
+    }
+    isInitializedRef.current = false;
+  }, []);
+
+  const initializeMap = useCallback(() => {
+    if (typeof window === 'undefined' || !window.L || !mapRef.current || isInitializedRef.current) {
+      return;
+    }
+
+    try {
+      const L = window.L;
+      
+      // 맵 컨테이너가 이미 사용 중인지 확인
+      if (mapRef.current._leaflet_id) {
+        return;
+      }
+
+      // 맵 초기화
+      const map = L.map(mapRef.current).setView([latitude, longitude], 15);
+      mapInstanceRef.current = map;
+      isInitializedRef.current = true;
+
+      // OpenStreetMap 타일 레이어 추가
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+
+      // 커스텀 핀 이미지 아이콘 생성
+      const customIcon = L.icon({
+        iconUrl: '/red_pin.png',
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -40]
+      });
+
+      // 가게 위치 마커 추가
+      const marker = L.marker([latitude, longitude], { icon: customIcon }).addTo(map);
+      
+      // 팝업 추가
+      marker.bindPopup(`
+        <div class="text-center">
+          <h3 class="text-lg font-bold mb-2">${storeName}</h3>
+          <p class="text-sm text-gray-600">${address}</p>
+        </div>
+      `);
+
+      // 맵 크기 조정을 위한 안전한 방법
+      const resizeMap = () => {
+        if (map && !map._removed) {
+          try {
+            map.invalidateSize();
+          } catch (error) {
+            console.log('Map resize error:', error);
+          }
+        }
+      };
+
+      // 약간의 지연 후 크기 조정
+      setTimeout(resizeMap, 100);
+      
+    } catch (error) {
+      console.error('Map initialization error:', error);
+      cleanupMap();
+    }
+  }, [latitude, longitude, storeName, address, cleanupMap]);
 
   useEffect(() => {
-    const initializeMap = () => {
-      if (typeof window !== 'undefined' && window.L) {
-        const L = window.L;
-        
-        // 이전 맵 인스턴스가 있다면 제거
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.remove();
-        }
-
-        // 맵 초기화
-        const map = L.map(mapRef.current).setView([latitude, longitude], 15);
-        mapInstanceRef.current = map;
-
-        // OpenStreetMap 타일 레이어 추가
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        // 커스텀 핀 이미지 아이콘 생성
-        const customIcon = L.icon({
-          iconUrl: '/red_pin.png',
-          iconSize: [40, 40], // 핀 이미지 크기에 맞춰 조정
-          iconAnchor: [20, 40], // 핀의 하단 중앙을 기준점으로 설정
-          popupAnchor: [0, -40] // 팝업이 핀 위에 표시되도록 설정
-        });
-
-        // 가게 위치 마커 추가
-        const marker = L.marker([latitude, longitude], { icon: customIcon }).addTo(map);
-        
-        // 팝업 추가
-        marker.bindPopup(`
-          <div class="text-center">
-            <h3 class="text-lg font-bold mb-2">${storeName}</h3>
-            <p class="text-sm text-gray-600">${address}</p>
-          </div>
-        `);
-
-        // 맵 크기 조정
-        setTimeout(() => {
-          map.invalidateSize();
-        }, 100);
-      }
-    };
-
-    // Leaflet이 로드되었는지 확인
+    // 컴포넌트 마운트 시 맵 초기화
     if (typeof window !== 'undefined' && window.L) {
       initializeMap();
-    } else {
+    } else if (typeof window !== 'undefined') {
       // Leaflet 로드 이벤트 리스너 추가
       const handleLeafletLoaded = () => {
         initializeMap();
@@ -67,12 +98,24 @@ const StoreMap = ({ latitude, longitude, storeName, address }) => {
       };
     }
 
+    // 컴포넌트 언마운트 시 정리
     return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-      }
+      cleanupMap();
     };
-  }, [latitude, longitude, storeName, address]);
+  }, [initializeMap, cleanupMap]);
+
+  // props가 변경될 때만 맵 재초기화
+  useEffect(() => {
+    if (isInitializedRef.current && mapInstanceRef.current) {
+      cleanupMap();
+      // 다음 렌더링 사이클에서 재초기화
+      const timer = setTimeout(() => {
+        initializeMap();
+      }, 0);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [latitude, longitude, storeName, address, initializeMap, cleanupMap]);
 
   // Leaflet CSS 로드
   useEffect(() => {
@@ -80,7 +123,7 @@ const StoreMap = ({ latitude, longitude, storeName, address }) => {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      link.integrity = 'sha256-p4NxAoJBgI1+UcN9v4mRJFIc82R5v98mQ5WgH6CwNQ=';
+      // integrity 체크 제거하여 로딩 문제 해결
       link.crossOrigin = '';
       document.head.appendChild(link);
     }
@@ -89,7 +132,7 @@ const StoreMap = ({ latitude, longitude, storeName, address }) => {
     if (typeof window !== 'undefined' && !window.L) {
       const script = document.createElement('script');
       script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+      // integrity 체크 제거하여 로딩 문제 해결
       script.crossOrigin = '';
       script.onload = () => {
         // 스크립트 로드 후 맵 초기화를 위해 useEffect 재실행
